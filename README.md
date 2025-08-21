@@ -9,8 +9,8 @@ It includes **theory notes**, **practical examples**, and **hands-on exercises**
 ```
 Spark/
 │
-├── Theory/ # Markdown notes on Spark concepts
-├── Practical/ # PySpark practice scripts
+├── Theory/ - Markdown notes on Spark concepts
+├── Practical/ - PySpark practice scripts
 ```
 ---
 
