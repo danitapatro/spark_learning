@@ -1,2 +1,6 @@
-# spark_learning
-A collection of Apache Spark learning resources, theory notes, and hands-on PySpark practice scripts for data engineering.
+# Spark Learning ---
+
+This repository contains my learning journey with **Apache Spark (PySpark)**.  
+It includes **theory notes**, **practical examples**, and **hands-on exercises** to build strong foundations for **data engineering and big data processing**.  
+
+---
