@@ -1,3 +1,11 @@
+## Table of Contents
+1. [Spark Info](#spark-info)
+2. [Core Processing Capabilities](#core-processing-capabilities)
+3. [Key Features and Advantages](#key-features-and-advantages)
+4. [Spark Ecosystem (Built-in Libraries)](#spark-ecosystem-built-in-libraries)
+5. [Real-World Use Cases](#real-world-use-cases)
+6. [Advantages Over Hadoop MapReduce](#advantages-over-hadoop-mapreduce)
+
 ### Apache Spark
 - Apache Spark is an open-source, distributed computing engine designed to process large-scale data quickly and efficiently.  
 - It provides a unified analytics engine with built-in modules for diverse data processing tasks.
