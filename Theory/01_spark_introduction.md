@@ -1,5 +1,5 @@
 ## Table of Contents
-1. [Spark Info](#spark-info)
+1. [Apache Spark](#apache-spark)
 2. [Core Processing Capabilities](#core-processing-capabilities)
 3. [Key Features and Advantages](#key-features-and-advantages)
 4. [Spark Ecosystem (Built-in Libraries)](#spark-ecosystem-built-in-libraries)
