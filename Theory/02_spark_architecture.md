@@ -12,7 +12,7 @@
   - [Lineage](#lineage)
   - [DAG (Directed Acyclic Graph)](#dag-directed-acyclic-graph)
   - [Difference Between Lineage and DAG](#difference-between-lineage-and-dag)
-- [Lazy Evaluation](#lazy-evaluation)
+- [Lazy Evaluation](./lazy_evaluation.md)
 - [Key Points to Remember](#key-points-to-remember)
 
 ---
