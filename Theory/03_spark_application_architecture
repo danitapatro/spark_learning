@@ -1,0 +1,82 @@
+# Spark Application Architecture
+
+## Table of Contents
+- [Introduction](#introduction)
+- [Key Components of Spark Application Architecture](#key-components-of-spark-application-architecture)
+  - [Driver Program](#driver-program)
+  - [Cluster Manager](#cluster-manager)
+  - [Executors](#executors)
+- [Step-by-Step Execution Flow](#step-by-step-execution-flow)
+- [Example of Spark Application Flow](#example-of-spark-application-flow)
+- [Conclusion](#conclusion)
+
+---
+
+## Introduction
+While **Spark Architecture** explains the overall ecosystem of Spark, the **Spark Application Architecture** focuses on how a single Spark program (or job) executes inside a cluster.  
+It is essential to understand the **role of driver, cluster manager, and executors**, as well as how tasks are scheduled and executed in a distributed environment.
+
+---
+
+## Key Components of Spark Application Architecture
+
+### Driver Program
+- The **Driver** is the main controller of a Spark application.
+- Responsibilities:
+  - Converts user code into a **logical plan**.
+  - Optimizes the plan into a **physical plan**.
+  - Divides the work into **stages and tasks**.
+  - Schedules tasks across executors.
+  - Collects results and returns them to the user.
+
+---
+
+### Cluster Manager
+- Responsible for allocating resources to the Spark application.
+- Types of Cluster Managers:
+  - **Standalone Cluster Manager** (default Spark cluster manager).
+  - **YARN** (Hadoop cluster manager).
+  - **Mesos**.
+  - **Kubernetes**.
+- Ensures Spark executors get CPU cores and memory for running tasks.
+
+---
+
+### Executors
+- Executors are **worker processes** launched on cluster nodes.
+- Responsibilities:
+  - Execute tasks assigned by the driver.
+  - Store data in memory or disk for caching.
+  - Communicate with the driver program.
+- Executors live for the duration of the Spark application.
+
+---
+
+## Step-by-Step Execution Flow
+1. **User submits Spark application** (written using Spark APIs such as RDD, DataFrame, or SQL).
+2. **Driver Program**:
+   - Builds a **Logical Plan**.
+   - Optimizes into a **Physical Plan**.
+   - Creates a **DAG (Directed Acyclic Graph)** of stages and tasks.
+3. **Cluster Manager** allocates resources for executors.
+4. **Executors** run tasks in parallel and store intermediate results.
+5. **Driver** collects final results and returns them to the user.
+
+---
+
+## Example of Spark Application Flow
+- A user writes code to count words in a file (`wordcount`).
+- The driver program breaks the code into **stages** (read file → split lines → count words).
+- The cluster manager allocates 5 executors across the cluster.
+- Executors process different chunks of the file in **parallel**.
+- Final results are sent back to the driver and displayed to the user.
+
+---
+
+## Conclusion
+The **Spark Application Architecture** explains how a single Spark job executes in a cluster:
+- **Driver** plans and schedules tasks.
+- **Cluster Manager** provides resources.
+- **Executors** execute tasks and return results.
+
+---
