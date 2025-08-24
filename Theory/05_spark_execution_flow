@@ -1,0 +1,113 @@
+# Spark Execution Flow (Job → Stage → Task)
+
+## Table of Contents
+1. [Introduction](#introduction)  
+2. [High-Level Execution Flow](#high-level-execution-flow)  
+3. [Detailed Breakdown](#detailed-breakdown)  
+   - [1. User Code Submission](#1-user-code-submission)  
+   - [2. Logical Plan Creation](#2-logical-plan-creation)  
+   - [3. DAG (Directed-Acyclic-Graph) Formation](#3-dag-directed-acyclic-graph-formation)  
+   - [4. Spark Jobs](#4-spark-jobs)  
+   - [5. Spark Stages](#5-spark-stages)  
+   - [6. Spark Tasks](#6-spark-tasks)  
+4. [Narrow vs Wide Transformations](#narrow-vs-wide-transformations)  
+5. [Example Walkthrough](#example-walkthrough)  
+6. [Summary](#summary)  
+
+---
+
+## Introduction
+In Spark, whenever a user submits an application, it doesn’t run the code line by line.  
+Instead, Spark breaks down the computation into **jobs**, **stages**, and **tasks**.  
+
+This hierarchical execution model ensures:  
+- Parallelism across a cluster.  
+- Fault tolerance.  
+- Efficient execution.  
+
+---
+
+## High-Level Execution Flow
+The execution process can be summarized as:  
+
+1. **User code submission** → Spark driver receives the job.  
+2. **Logical plan creation** → Spark converts transformations into a logical plan.  
+3. **DAG (Directed Acyclic Graph)** → Optimized execution plan is formed.  
+4. **Jobs** → Each action triggers a new Spark job.  
+5. **Stages** → Each job is divided into smaller stages at shuffle boundaries.  
+6. **Tasks** → Each stage is further divided into tasks that run on executors.  
+
+---
+
+## Detailed Breakdown
+
+### 1. User Code Submission
+- Spark application starts when you write code using RDD/DataFrame API.  
+- Nothing executes until an **action** (e.g., `.collect()`, `.count()`) is triggered.  
+
+---
+
+### 2. Logical Plan Creation
+- Spark takes the user code and builds a **logical execution plan**.  
+- Optimizations are applied (e.g., filter pushdown, column pruning).  
+
+---
+
+### 3. DAG (Directed Acyclic Graph) Formation
+- Spark creates a **DAG** representing transformations and dependencies.  
+- Example:  
+  - `map()` → narrow dependency.  
+  - `reduceByKey()` → wide dependency (requires shuffle).  
+
+---
+
+### 4. Spark Jobs
+- Triggered by **actions** such as `collect()`, `count()`, `saveAsTextFile()`.  
+- The driver converts the application into **one or more jobs**.  
+- Each job is internally represented as a **DAG of stages**.  
+
+📌 **Key Point**: A Spark job = execution plan for an action.
+
+---
+
+### 5. Spark Stages
+- A **stage** is a set of tasks that can be executed **without shuffle**.  
+- Spark divides jobs into **stages** based on **shuffle boundaries**.  
+- Two types of stages:  
+  - **ShuffleMapStage** → produces intermediate shuffle files.  
+  - **ResultStage** → produces the final result.  
+
+📌 **Key Point**: Stages are created whenever Spark needs to move data across executors.
+
+---
+
+### 6. Spark Tasks
+- A **task** is the smallest unit of work sent to executors.  
+- Each partition of data = one task.  
+- Executors run tasks in parallel, each mapped to a core.  
+
+Example:  
+- An executor with **16 cores** can run **16 tasks in parallel** on 16 partitions.  
+
+📌 **Key Point**: Tasks represent the **actual computation** performed on partitions.
+
+---
+
+## Narrow vs Wide Transformations
+
+| Transformation Type | Example | Shuffle Needed? | Impact |
+|----------------------|---------|-----------------|--------|
+| **Narrow** | `map`, `filter` | ❌ No shuffle | Faster execution |
+| **Wide** | `reduceByKey`, `groupBy` | ✅ Yes shuffle | Slower, requires stage boundary |
+
+---
+
+## Example Walkthrough
+Consider this code:  
+
+```python
+rdd = sc.textFile("data.txt")
+words = rdd.flatMap(lambda x: x.split(" "))   # Narrow
+pairs = words.map(lambda w: (w, 1))           # Narrow
+counts = pairs.reduceByKey(lambda a, b: a+b)  # Wide (shuffle)
+counts.collect()                              # Action
