@@ -1,0 +1,81 @@
+# Spark Transformations and Actions
+
+## Table of Contents
+- [Introduction](#introduction)
+- [Transformations](#transformations)
+  - [Narrow Transformations](#narrow-transformations)
+  - [Wide Transformations](#wide-transformations)
+- [Actions](#actions)
+- [Key Differences](#key-differences)
+- [Examples](#examples)
+- [Summary](#summary)
+
+---
+
+## Introduction
+In Spark, all computations on data are expressed as either **transformations** or **actions**.  
+- **Transformations**: Create a new RDD/DataFrame from an existing one (lazy evaluation).  
+- **Actions**: Trigger the execution of transformations and return results to the driver or write them to external storage.  
+
+This distinction is fundamental to understanding Spark’s **lazy evaluation** and **execution flow**.
+
+---
+
+## Transformations
+Transformations are **lazy operations** on RDDs/DataFrames/Datasets. They don’t execute immediately but instead build a **logical execution plan (DAG)**. Execution only happens when an **action** is called.
+
+### Narrow Transformations
+- Each input partition contributes to only one output partition.  
+- Data is not shuffled across the cluster.  
+- **Faster** because computation happens locally.  
+- Examples:  
+  - `map()`  
+  - `filter()`  
+  - `union()`  
+
+### Wide Transformations
+- An input partition contributes to **multiple output partitions**.  
+- Data is **shuffled** across the cluster.  
+- **Slower** but necessary for grouping or aggregating.  
+- Examples:  
+  - `groupByKey()`  
+  - `reduceByKey()`  
+  - `join()`  
+
+---
+
+## Actions
+Actions **trigger the execution** of all previously defined transformations. They either:  
+1. Return results to the driver.  
+2. Write results to external storage (HDFS, S3, DB, etc.).
+
+### Common Actions
+- `collect()` → Returns entire dataset to driver.  
+- `count()` → Returns number of elements.  
+- `take(n)` → Returns first `n` elements.  
+- `saveAsTextFile(path)` → Writes output to storage.  
+- `foreach(func)` → Applies a function to each element (executed on workers).  
+
+---
+
+## Key Differences
+
+| Aspect              | Transformations                | Actions                         |
+|---------------------|--------------------------------|---------------------------------|
+| Execution           | Lazy (not executed immediately) | Trigger execution (immediate)   |
+| Output              | New RDD/DataFrame              | Result value or stored output   |
+| Examples            | `map()`, `filter()`, `join()`  | `collect()`, `count()`, `save()`|
+| DAG Role            | Build the DAG (logical plan)   | Triggers DAG execution          |
+
+---
+
+## Examples
+
+### Example 1: Transformation (Lazy)
+```python
+rdd = sc.parallelize([1, 2, 3, 4, 5])
+squared = rdd.map(lambda x: x * x)  # No job triggered yet
+
+### Example 2: Action (Execution Triggered)
+```python
+result = squared.collect()  # Now job executes and returns [1, 4, 9, 16, 25]
