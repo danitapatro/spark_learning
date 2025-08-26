@@ -1,0 +1,62 @@
+# Narrow Transformations in Apache Spark
+
+## Table of Contents
+1. [Introduction](#introduction)
+2. [Definition of Narrow Transformation](#definition-of-narrow-transformation)
+3. [Key Characteristics](#key-characteristics)
+4. [Common Narrow Transformations](#common-narrow-transformations)
+   - [map()](#map)
+   - [mapPartitions()](#mappartitions)
+   - [mapValues()](#mapvalues)
+   - [flatMap()](#flatmap)
+   - [filter()](#filter)
+   - [union()](#union)
+   - [sample()](#sample)
+   - [distinct()](#distinct)
+   - [coalesce()](#coalesce)
+   - [glom()](#glom)
+   - [zip()](#zip)
+   - [zipWithIndex()](#zipwithindex)
+   - [zipWithUniqueId()](#zipwithuniqueid)
+5. [Use Cases](#use-cases)
+6. [Conclusion](#conclusion)
+
+---
+
+## Introduction
+Transformations in Spark are operations on RDDs, DataFrames, or Datasets that result in a new dataset. They are of two types:
+- **Narrow Transformations**
+- **Wide Transformations**
+
+This document focuses on **Narrow Transformations**, which are essential for understanding Spark's lazy evaluation and execution flow.
+
+---
+
+## Definition of Narrow Transformation
+A **Narrow Transformation** is a Spark transformation where **each input partition contributes to at most one output partition**.  
+
+This means:
+- Data **does not need to be shuffled** across nodes in the cluster.
+- Each transformation is **independent** and works locally within the partition.
+- Narrow transformations are generally **faster and more efficient** than wide transformations.
+
+---
+
+## Key Characteristics
+- **No shuffling** of data between executors.
+- Each partition of the parent RDD is processed by **one single task**.
+- Computations are **localized** to the partition.
+- More efficient than wide transformations in terms of execution time.
+
+---
+
+## Common Narrow Transformations
+
+### 1. map()
+- **Definition**: Applies a function to each element in the dataset and returns a new dataset.
+- **Use Case**: Convert, modify, or transform individual elements.
+- **Example**:
+  ```python
+  rdd = sc.parallelize([1, 2, 3, 4])
+  result = rdd.map(lambda x: x * 2)
+  print(result.collect())  # [2, 4, 6, 8]
