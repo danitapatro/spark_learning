@@ -56,7 +56,137 @@ This means:
 - **Definition**: Applies a function to each element in the dataset and returns a new dataset.
 - **Use Case**: Convert, modify, or transform individual elements.
 - **Example**:
-  ```python
-  rdd = sc.parallelize([1, 2, 3, 4])
-  result = rdd.map(lambda x: x * 2)
-  print(result.collect())  # [2, 4, 6, 8]
+```python
+rdd = sc.parallelize([1, 2, 3, 4])
+result = rdd.map(lambda x: x * 2)
+print(result.collect())  # [2, 4, 6, 8]
+ 
+### 2. mapPartitions()
+- **Definition**: Similar to `map()` but operates on an entire partition at once.  
+- **Use Case**: Efficient when initializing expensive resources.  
+- **Example**:
+```python
+rdd = sc.parallelize([1, 2, 3, 4], 2)
+result = rdd.mapPartitions(lambda partition: (x * 2 for x in partition))
+print(result.collect())  # [2, 4, 6, 8]
+
+### 3. mapValues()
+- **Definition**: Applies a function to only the values of key-value pairs.
+- **Use Case**: Modify values while preserving keys.
+-**Example**:
+```python
+rdd = sc.parallelize([(1, 2), (3, 4)])
+result = rdd.mapValues(lambda x: x + 1)
+print(result.collect())  # [(1, 3), (3, 5)]
+
+### 4. flatMap()
+- **Definition**: Similar to map(), but allows each input element to return 0 or more elements.
+- **Use Case**: Splitting lines into words.
+- **Example**:
+```python
+rdd = sc.parallelize(["hello world", "spark transformations"])
+result = rdd.flatMap(lambda x: x.split(" "))
+print(result.collect())  # ['hello', 'world', 'spark', 'transformations']
+
+### 5. filter()
+- **Definition**: Filters elements based on a condition.
+- **Use Case**: Select elements meeting a predicate.
+- **Example**:
+```python
+rdd = sc.parallelize([1, 2, 3, 4, 5])
+result = rdd.filter(lambda x: x % 2 == 0)
+print(result.collect())  # [2, 4]
+
+### 6. union()
+- **Definition**: Returns the union of two RDDs.
+- **Use Case**: Combine multiple datasets.
+- **Example**:
+```python
+rdd1 = sc.parallelize([1, 2])
+rdd2 = sc.parallelize([3, 4])
+result = rdd1.union(rdd2)
+print(result.collect())  # [1, 2, 3, 4]
+
+### 7. sample()
+- **Definition**: Returns a sampled subset of the dataset.
+- **Use Case**: Random sampling for testing/prototyping.
+- **Example**:
+```python
+rdd = sc.parallelize([1, 2, 3, 4, 5])
+result = rdd.sample(False, 0.4)
+print(result.collect())  # Example output: [2, 5]
+
+### 8. distinct()
+- **Definition**: Returns a dataset with unique elements.
+- **Note**: May involve shuffle internally, but is considered a transformation.
+- **Example**:
+```python
+rdd = sc.parallelize([1, 2, 2, 3, 4, 4])
+result = rdd.distinct()
+print(result.collect())  # [1, 2, 3, 4]
+
+### 9. coalesce()
+- **Definition**: Reduces the number of partitions without shuffle.
+- **Use Case**: Optimize partitions after filtering.
+- **Example**:
+```python
+rdd = sc.parallelize([1, 2, 3, 4, 5], 5)
+result = rdd.coalesce(2)
+print(result.getNumPartitions())  # 2
+
+### 10. glom()
+- **Definition**: Converts each partition into a list.
+- **Use Case**: Inspecting partition distribution.
+- **Example**:
+```python
+rdd = sc.parallelize([1, 2, 3, 4], 2)
+result = rdd.glom().collect()
+print(result)  # [[1, 2], [3, 4]]
+
+### 11. zip()
+- **Definition**: Combines two RDDs element-wise.
+- **Use Case**: Pairing elements across datasets.
+- **Example**:
+```python
+rdd1 = sc.parallelize([1, 2, 3])
+rdd2 = sc.parallelize(['a', 'b', 'c'])
+result = rdd1.zip(rdd2)
+print(result.collect())  # [(1, 'a'), (2, 'b'), (3, 'c')]
+
+### 12. zipWithIndex()
+- **Definition**: Assigns an index to each element.
+- **Use Case**: Enumerating elements.
+- **Example**:
+```python
+rdd = sc.parallelize(['a', 'b', 'c'])
+result = rdd.zipWithIndex()
+print(result.collect())  # [('a', 0), ('b', 1), ('c', 2)]
+
+### 13. zipWithUniqueId()
+- **Definition**: Assigns a unique ID to each element.
+- **Use Case**: Generating unique identifiers.
+- **Example**:
+```python
+rdd = sc.parallelize(['x', 'y', 'z'])
+result = rdd.zipWithUniqueId()
+print(result.collect())  # [('x', 0), ('y', 1), ('z', 2)]
+
+---
+
+## Use Cases
+- **map / flatMap** → Data transformation and parsing.
+- **filter** → Data cleaning and preprocessing.
+- **union** → Merging multiple datasets.
+- **coalesce** → Reducing partitions for efficiency.
+- **sample** → Extracting test datasets.
+- **zip functions** → Indexing or pairing datasets.
+
+---
+
+## Conclusion
+Narrow transformations in Spark are:
+- **Efficient** (no shuffle required).
+- **Partition-local operations**.
+- **Foundational building blocks** for Spark jobs.
+
+Mastering narrow transformations is key to writing optimized Spark applications.
