@@ -1,0 +1,137 @@
+# Wide Transformations in Apache Spark
+
+## 📑 Table of Contents
+1. [Introduction](#introduction)  
+2. [Definition of Wide Transformation](#definition-of-wide-transformation)  
+3. [How Wide Transformations Work](#how-wide-transformations-work)  
+4. [Key Wide Transformation Functions](#key-wide-transformation-functions)  
+   - [groupByKey()](#groupbykey)  
+   - [reduceByKey()](#reducebykey)  
+   - [aggregateByKey()](#aggregatebykey)  
+   - [join()](#join)  
+   - [cogroup()](#cogroup)  
+   - [distinct()](#distinct)  
+   - [repartition()](#repartition)  
+5. [Use Cases of Wide Transformations](#use-cases-of-wide-transformations)  
+6. [Performance Considerations](#performance-considerations)  
+7. [Conclusion](#conclusion)  
+
+---
+
+## Introduction
+In Apache Spark, transformations are classified into **narrow** and **wide** based on how data is shuffled across partitions.  
+Wide transformations are more expensive compared to narrow ones since they require **shuffling** — redistributing data across the cluster.
+
+---
+
+## Definition of Wide Transformation
+A **wide transformation** is a transformation where the data from one partition may need to be moved across the cluster to a different partition.  
+This movement of data is called a **shuffle**.
+
+- **Narrow transformations**: No shuffle required, data stays within the same partition.  
+- **Wide transformations**: Data shuffle occurs → performance impact.  
+
+👉 In short: Wide transformations cause Spark to perform a **stage boundary** because data must be redistributed.
+
+---
+
+## How Wide Transformations Work
+1. Spark applies the transformation logic (e.g., `groupByKey`).  
+2. The data is **reshuffled across the cluster** to group related records together.  
+3. Each new partition contains data from multiple previous partitions.  
+4. This triggers a **shuffle read/write operation** on disk and network.  
+
+⚠️ **Note:** Shuffles are expensive operations in Spark.
+
+---
+
+## Key Wide Transformation Functions
+
+## 1. `groupByKey()`
+- **Definition:** Groups all values with the same key into a single sequence.
+- **Use Cases:** Useful when we want to group items by key for later processing.
+- **Example:**
+```python
+rdd = sc.parallelize([("apple", 1), ("banana", 2), ("apple", 3)])
+grouped = rdd.groupByKey().mapValues(list)
+print(grouped.collect()) # [('apple', [1, 3]), ('banana', [2])]
+```
+
+---
+
+## 2. `reduceByKey()`
+- **Definition:** Aggregates values for each key using a reduce function. More efficient than `groupByKey()` as it performs map-side combining.
+- **Use Cases:** Word count, summing sales by product, finding max temperature by city.
+- **Example:**
+```python
+rdd = sc.parallelize([("apple", 1), ("banana", 2), ("apple", 3)])
+reduced = rdd.reduceByKey(lambda x, y: x + y)
+print(reduced.collect()) # [('banana', 2), ('apple', 4)]
+```
+
+---
+
+## 3. `aggregateByKey()`
+- **Definition:** Similar to `reduceByKey()`, but allows **different aggregation logic** for within-partition and across-partition operations.
+- **Use Cases:** Calculating averages (sum + count), custom metrics per key.
+- **Example:**
+```python
+rdd = sc.parallelize([("apple", 1), ("apple", 3), ("banana", 2)])
+# (zeroValue, seqOp, combOp)
+agg = rdd.aggregateByKey((0, 0),
+lambda acc, val: (acc[0] + val, acc[1] + 1),
+lambda acc1, acc2: (acc1[0] + acc2[0], acc1[1] + acc2[1]))
+avg = agg.mapValues(lambda x: x[0] / x[1])
+print(avg.collect()) # [('banana', 2.0), ('apple', 2.0)]
+```
+
+---
+
+## 4. `join()`
+- **Definition:** Performs an inner join between two RDDs/DataFrames based on key.
+- **Use Cases:** Combining datasets like `customer` and `orders` by `customer_id`.
+- **Example:**
+```python
+rdd1 = sc.parallelize([(1, "Alice"), (2, "Bob")])
+rdd2 = sc.parallelize([(1, "NY"), (2, "LA"), (3, "TX")])
+joined = rdd1.join(rdd2)
+print(joined.collect()) # [(1, ('Alice', 'NY')), (2, ('Bob', 'LA'))]
+```
+
+---
+
+## 5. `cogroup()`
+- **Definition:** Groups data from multiple RDDs by key into a tuple of iterables.
+- **Use Cases:** Useful for multi-dataset comparisons, such as grouping students and their grades from different sources.
+print(coalesced.getNumPartitions()) # 2
+
+---
+
+## Use Cases of Wide Transformations
+- **Data aggregation** (e.g., sales by region).  
+- **Joins between large datasets** (e.g., customer and transaction data).  
+- **De-duplication** of records.  
+- **Repartitioning** for parallelism optimization.
+
+---
+
+## Performance Considerations
+- **Shuffles are expensive** due to disk I/O, network I/O, and data serialization.  
+- Use `reduceByKey` or `aggregateByKey` instead of `groupByKey` when possible.  
+- Minimize wide transformations in the pipeline.  
+- Repartition only when necessary.  
+
+---
+
+## 🔑 Key Notes
+- **groupByKey vs reduceByKey:** Prefer `reduceByKey()` for efficiency.
+- **aggregateByKey:** Provides flexibility for custom aggregations.
+- **join/cogroup:** Cause heavy shuffles; optimize with partitioning.
+- **repartition vs coalesce:** Use `coalesce()` when reducing partitions; use `repartition()` for increasing partitions.
+
+---
+
+## Conclusion
+Wide transformations are fundamental for distributed data processing in Spark but come at the cost of **shuffling**, which is expensive.  
+Understanding when and how to use wide transformations efficiently is key to optimizing Spark jobs.
+
