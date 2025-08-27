@@ -13,8 +13,9 @@
    - [distinct()](#distinct)  
    - [repartition()](#repartition)  
 5. [Use Cases of Wide Transformations](#use-cases-of-wide-transformations)  
-6. [Performance Considerations](#performance-considerations)  
-7. [Conclusion](#conclusion)  
+6. [Performance Considerations](#performance-considerations) 
+7. [Key Notes](#key_notes)
+8. [Conclusion](#conclusion)  
 
 ---
 
