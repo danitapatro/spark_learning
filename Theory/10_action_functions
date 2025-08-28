@@ -1,0 +1,213 @@
+# Action Functions in Apache Spark
+
+In Spark, **Action functions** trigger the execution of the transformations that are applied on RDDs. 
+Unlike transformations, which are lazily evaluated, actions return a result to the driver program or write data to external storage.
+
+---
+
+## Table of Contents
+- [1. collect()](#1-collect)
+- [2. count()](#2-count)
+- [3. take(n)](#3-taken)
+- [4. first()](#4-first)
+- [5. reduce(func)](#5-reducefunc)
+- [6. fold(zero-value-func)](#6-foldzero-value-func)
+- [7. aggregate(zero-value-seqop-combop)](#7-aggregatezero-value-seqop-combop)
+- [8. foreach(func)](#8-foreachfunc)
+- [9. saveAsTextFile(path)](#9-saveastextfilepath)
+- [10. saveAsSequenceFile(path)](#10-saveassequencefilepath)
+- [11. saveAsObjectFile(path)](#11-saveasobjectfilepath)
+- [12. countByKey()](#12-countbykey)
+- [13. collectAsMap()](#13-collectasmap)
+- [14. lookup(key)](#14-lookupkey)
+
+---
+
+## 1. collect()
+
+**Definition:**  
+Retrieves the entire RDD as a list to the driver.
+**Use Case:**  
+Useful when the dataset is small enough to fit in the driver’s memory.
+**Example:**
+```python
+rdd = sc.parallelize([1, 2, 3, 4])
+result = rdd.collect()
+print(result)  # Output: [1, 2, 3, 4]
+```
+
+---
+
+## 2. count()
+**Definition:**  
+Returns the number of elements in the RDD.
+**Use Case:**  
+Quickly find the dataset size.
+**Example:**
+```python
+rdd = sc.parallelize([10, 20, 30, 40])
+print(rdd.count())  # Output: 4
+```
+
+---
+
+## 3. take(n)
+**Definition:**  
+Returns the first `n` elements of the RDD.
+**Use Case:**  
+Useful for previewing data without loading everything.
+**Example:**
+```python
+rdd = sc.parallelize([5, 10, 15, 20, 25])
+print(rdd.take(3))  # Output: [5, 10, 15]
+```
+
+---
+
+## 4. first()
+**Definition:**  
+Returns the first element of the RDD.
+**Use Case:**  
+Useful when only the first record is needed.
+**Example:**
+```python
+rdd = sc.parallelize([100, 200, 300])
+print(rdd.first())  # Output: 100
+```
+
+---
+
+## 5. reduce(func)
+**Definition:**  
+Aggregates the elements of the RDD using a function (must be associative & commutative).
+**Use Case:**  
+Summing or combining elements.
+**Example:**
+```python
+rdd = sc.parallelize([1, 2, 3, 4])
+result = rdd.reduce(lambda a, b: a + b)
+print(result)  # Output: 10
+```
+
+---
+
+## 6. fold(zero, func)
+**Definition:**  
+Similar to `reduce()`, but requires an initial zero value.
+**Use Case:**  
+Safe aggregation with a neutral starting value.
+**Example:**
+```python
+rdd = sc.parallelize([1, 2, 3, 4])
+result = rdd.fold(0, lambda a, b: a + b)
+print(result)  # Output: 10
+```
+
+---
+
+## 7. aggregate(zero, seqOp, combOp)
+**Definition:**  
+More generalized aggregation than `fold()`. Uses separate functions for merging within partitions and across partitions.
+**Use Case:**  
+Computing complex aggregates like averages.
+**Example:**
+```python
+rdd = sc.parallelize([1, 2, 3, 4])
+# (sum, count)
+result = rdd.aggregate((0, 0),
+                       (lambda acc, value: (acc[0] + value, acc[1] + 1)),
+                       (lambda acc1, acc2: (acc1[0] + acc2[0], acc1[1] + acc2[1])))
+
+avg = result[0] / result[1]
+print(avg)  # Output: 2.5
+```
+
+---
+
+## 8. foreach(func)
+**Definition:**  
+Applies a function to each element of the RDD (executed at worker nodes, no result returned).
+**Use Case:**  
+Performing side effects like saving to DB, updating counters, etc.
+**Example:**
+```python
+rdd = sc.parallelize([1, 2, 3, 4])
+rdd.foreach(lambda x: print(x * 2))
+```
+
+---
+
+## 9. countByKey()
+**Definition:**  
+Applies to paired RDDs (key-value pairs). Returns a dictionary of key counts.
+**Use Case:**  
+Counting frequency of keys.
+**Example:**
+```python
+rdd = sc.parallelize([("a", 1), ("b", 1), ("a", 1)])
+print(rdd.countByKey())  # Output: {'a': 2, 'b': 1}
+```
+
+---
+
+## 10. collectAsMap()
+**Definition:**  
+Collects the elements of a paired RDD as a dictionary (key-value map).
+**Use Case:**  
+When you need the full mapping in driver memory.
+**Example:**
+```python
+rdd = sc.parallelize([("a", 1), ("b", 2), ("c", 3)])
+print(rdd.collectAsMap())  # Output: {'a': 1, 'b': 2, 'c': 3}
+```
+
+---
+
+## 11. saveAsTextFile(path)
+**Definition:**  
+Saves the RDD data into a text file at the specified path.
+**Use Case:**  
+Persisting results in text format.
+**Example:**
+```python
+rdd = sc.parallelize(["Hello", "Spark", "World"])
+rdd.saveAsTextFile("output_text")
+```
+
+---
+
+## 12. saveAsSequenceFile(path)
+**Definition:**  
+Saves the RDD as a Hadoop Sequence file.
+**Use Case:**  
+Interoperability with Hadoop ecosystem.
+**Example:**
+```python
+rdd = sc.parallelize([("a", 1), ("b", 2)])
+rdd.saveAsSequenceFile("output_seq")
+```
+
+---
+
+## 13. saveAsObjectFile(path)
+**Definition:**  
+Saves the RDD elements as serialized Java objects.
+**Use Case:**  
+Efficient for persisting objects.
+**Example:**
+```python
+rdd = sc.parallelize([("x", 10), ("y", 20)])
+rdd.saveAsObjectFile("output_obj")
+```
+
+----
+
+## 14. lookup(key)
+**Definition:** 
+Returns all values associated with the given key.
+**Use Case:**
+Fast lookup in pair RDDs.
+**Example:**
+```python
+print(pairs.lookup("a"))  # Output: [1, 3]
+```
