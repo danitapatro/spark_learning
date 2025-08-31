@@ -1,1 +1,40 @@
+# PySpark RDD Persistence & Caching
 
+## Table of Contents
+1. [Introduction](#introduction)  
+2. [Why Persistence is Needed](#why-persistence-is-needed)  
+3. [Cache vs Persist vs Checkpoint](#cache-vs-persist-vs-checkpoint)  
+4. [Storage Levels in Persist](#storage-levels-in-persist)  
+5. [Use Cases](#use-cases)  
+6. [Examples](#examples)  
+
+---
+
+## Introduction
+In PySpark, transformations are **lazy**, meaning they are not executed until an action is triggered.  
+If the same RDD is used multiple times in different actions, Spark will recompute the RDD each time, which is expensive.  
+
+To optimize performance, Spark provides **persistence mechanisms**:
+- **Cache**
+- **Persist**
+- **Checkpoint**
+
+---
+
+## Why Persistence is Needed
+- Avoids recomputation of RDDs across multiple actions.  
+- Improves performance by storing data in **memory** or **disk**.  
+- Useful in **iterative algorithms** (e.g., Machine Learning, Graph algorithms).  
+
+---
+
+## Cache vs Persist vs Checkpoint
+
+### 1. Cache
+- Stores RDD **only in memory**.  
+- Default storage level = `MEMORY_ONLY`.  
+- Fastest option but may fail if data doesn’t fit in memory.
+```python
+rdd = sc.textFile("data.txt")
+rdd.cache()
+```
